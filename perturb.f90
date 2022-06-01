@@ -15,9 +15,9 @@ integer                                             :: i, j
 
 do i =  -N, N
     do j = -M, M
-        if (((i**2 + j**2) .gt. 2*2) .and. ((i**2 + j**2) .lt. N**2)) then
+        if (((i**2 + j**2) .gt. 0) .and. ((i**2 + j**2) .lt. N**2 + 1)) then
             randn = random_normal()
-            A(i, j) = (lambda_k - randn) / (2*N+1)
+            A(i, j) = (lambda_k - 5*randn) * sqrt((real(i)**2 + real(j)**2)/(2*N**2))
         else
             A(i, j) = 0
         end if
@@ -76,7 +76,7 @@ do j = -M, M
   M_mat(:,j) = j
 end do
 
-max_height = 130 ! perturbations greater than this quantity are not acceptable
+max_height = 100 * lambda_k ! perturbations greater than this quantity are not acceptable
 half_height = (0.5 * lambda_k)
 inv_maxr = 1 / maxval(r(:))
 inv_lambda = 1 / lambda_k
@@ -87,9 +87,9 @@ do i = 0, sample_points-1
         B = cos((2 * pi * N_mat * th(i) * inv_lambda) + (2 * pi * M_mat * x(i) * inv_lambda) + phi)
         double_sum(i) = sum(A*B)
         if (abs(double_sum(i)) .gt. max_height) then
-            double_sum(i) = half_height
+            double_sum(i) = 0
         end if
-        r(i) = r(i) + (abs(double_sum(i)) - half_height) * r(i) * inv_maxr
+        r(i) = r(i) + abs(double_sum(i)) * r(i) * inv_maxr
     end if
 end do
 

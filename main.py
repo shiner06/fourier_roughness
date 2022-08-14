@@ -18,6 +18,7 @@ Created on Tue Dec  8 15:21:43 2020
 from initialize import mesh_reader, point_cloud_writer
 from excel_writer import exporter
 from bar_graph_3d import bar_graph
+from contour_plotter import contour
 import open3d as o3d
 import os
 import time
@@ -28,21 +29,23 @@ start_time = time.time()
 
 input_path  = os.getcwd()+"/"
 output_path = os.getcwd()+"/"
-mesh_file   = "poly_medium_tip_rigid_10k.stl"
+mesh_file   = "Common_Poly_Sharp_Tip_Rigid_10K_Rotated.STL"
 
 ##############################################################################
 # Alter these fourier series function parameters
-N=10                        # Upper limit of summation
-M=10                        # Upper limit of summation
-lambda_k=100                # Roughness design wavelength
-lam = lambda_k * N       # Nominal roughness wavelength
+# The length of the sharp tip is 7.5 inches
+# 7.5 = 2*N * lambda_k
+N=10                 # Upper limit of summation
+M=10                 # Upper limit of summation
+lambda_k=200        # Roughness design minimum wavelength in mils
 ##############################################################################
 
 # Read an .STL or .PLY mesh, pass to point cloud writer
 mesh = mesh_reader(input_path, mesh_file)
 
 #  Poisson disk sampling to create point cloud
-sample_points = 50
+sample_points = 1000
+
 pcd = point_cloud_writer(mesh, sample_points)
 
 # Create amplitude and phase shift matrices
@@ -50,13 +53,16 @@ pcd = point_cloud_writer(mesh, sample_points)
 print("Preparing randomized amplitudes and phases...")
 A, phi = perturb.wave_prep(N, M, lambda_k)
 
+# Plot a representative contour in cartesian coordinates
+contour(phi, A, N, M, lambda_k)
+
 # Plot the A matrix
 bar_graph(A, N, M, lambda_k)
 
-# Perturb point cloud with clylindrical fourier series
+# Perturb point cloud with axisymmetric fourier series
 print("Perturbing point cloud...")
 pts = np.float32(np.asarray(pcd.points))
-pts_perturbed, double_sum, B = perturb.fourier_series(pts, phi, A, lam, sample_points, N, M)
+pts_perturbed = perturb.axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M)
 
 # Clear old elements
 pcd.points.clear()

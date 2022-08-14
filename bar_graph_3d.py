@@ -21,14 +21,14 @@ import matplotlib.cm as cm
 
 def bar_graph(A, N, M, lambda_k):
     fig = plt.figure()
-    ax = Axes3D(fig)
+    ax  = Axes3D(fig)
     
-    # Work out matrix dimensions
-    lx= len(A[0])            
-    ly= len(A[:,0])
-    xpos = np.arange(0,lx,1)    # Set up a mesh of positions
-    ypos = np.arange(0,ly,1)
-    xpos, ypos = np.meshgrid(xpos, ypos)
+    # Work out matrix dimensions and create mesh
+    lx          = len(A[0])            
+    ly          = len(A[:,0])
+    xpos        = np.arange(0,lx,1)
+    ypos        = np.arange(0,ly,1)
+    xpos, ypos  = np.meshgrid(xpos, ypos)
     
     # Convert positions to 1D array
     xpos = xpos.flatten()   
@@ -36,21 +36,21 @@ def bar_graph(A, N, M, lambda_k):
     zpos = np.zeros(lx*ly)
     
     # Control the thickness/spacing of bars and tick marks
-    scale_factor = 0.5
-    dx = scale_factor * np.ones_like(zpos)
-    dy = dx.copy()
-    dz = A.flatten()
+    scale_factor    = 0.5
+    dx   = scale_factor * np.ones_like(zpos)
+    dy   = dx.copy()
+    dz   = A.flatten()
     
-    offset = dz + np.abs(dz.min())
-    fracs = offset.astype(float)/offset.max()
-    norm = colors.Normalize(fracs.min(), fracs.max())
-    color_values = cm.jet(norm(fracs.tolist()))
+    offset          = dz + np.abs(dz.min())
+    fracs           = offset.astype(float)/offset.max()
+    norm            = colors.Normalize(fracs.min(), fracs.max())
+    color_values    = cm.jet(norm(fracs.tolist()))
 
     ax.bar3d(xpos,ypos,zpos, dx, dy, dz, color=color_values)
     
     x_ticks = np.linspace(1,len(range(2*N+1)),int(2*N*scale_factor+1))
     y_ticks = np.linspace(1,len(range(2*M+1)),int(2*M*scale_factor+1))
-    z_ticks = np.linspace(0,int(lambda_k),int(lambda_k/10)+1).astype(int)
+    z_ticks = np.linspace(0,int(lambda_k),int(lambda_k/50)+1).astype(int)
     x_tick_labels = np.round(np.linspace(-N,N,int((2*N)*scale_factor)+1)).astype(int)
     y_tick_labels = np.round(np.linspace(-M,M,int((2*M)*scale_factor)+1)).astype(int)
     

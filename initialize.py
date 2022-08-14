@@ -38,7 +38,6 @@ def point_cloud_writer(mesh, sample_points):
     # pcd = mesh.sample_points_uniformly(number_of_points=sample_points)
     print(pcd)
 
-    # Paint the point cloud
-    pcd.paint_uniform_color([1, 1, 1])
+    # Write out the point cloud
     o3d.io.write_point_cloud("point_cloud.xyz", pcd)
     return pcd

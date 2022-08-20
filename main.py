@@ -36,17 +36,17 @@ mesh_file   = "Common_Poly_Sharp_Tip_Rigid_10K_Rotated.STL"
 # The length of the sharp tip is 7.5 inches
 # 7.5 = 2*N * lambda_k
 N=10                 # Upper limit of summation
-M=10                 # Upper limit of summation
-lambda_k=200        # Roughness design minimum wavelength in mils
+M=40               # Upper limit of summation
+lambda_k=50        # Roughness design minimum wavelength in mils
 ##############################################################################
 
 # Read an .STL or .PLY mesh, pass to point cloud writer
-mesh = mesh_reader(input_path, mesh_file)
+# mesh = mesh_reader(input_path, mesh_file)
 
 #  Poisson disk sampling to create point cloud
-sample_points = 1000
+# sample_points = 1000c
 
-pcd = point_cloud_writer(mesh, sample_points)
+# pcd = point_cloud_writer(mesh, sample_points)
 
 # Create amplitude and phase shift matrices
 # to recompile perturb, enter: f2py -m perturb -c perturb.f90
@@ -57,27 +57,27 @@ A, phi = perturb.wave_prep(N, M, lambda_k)
 contour(phi, A, N, M, lambda_k)
 
 # Plot the A matrix
-bar_graph(A, N, M, lambda_k)
+# bar_graph(A, N, M, lambda_k)
 
 # Perturb point cloud with axisymmetric fourier series
-print("Perturbing point cloud...")
-pts = np.float32(np.asarray(pcd.points))
-pts_perturbed = perturb.axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M)
+# print("Perturbing point cloud...")
+# pts = np.float32(np.asarray(pcd.points))
+# pts_perturbed = perturb.axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M)
 
 # Clear old elements
-pcd.points.clear()
+# pcd.points.clear()
 
 # Replace with new perturbed elements
-pcd.points.extend(pts_perturbed)
+# pcd.points.extend(pts_perturbed)
 
 # Write a new point cloud
-o3d.io.write_point_cloud("point_cloud_perturbed.xyz", pcd)
+# o3d.io.write_point_cloud("point_cloud_perturbed.xyz", pcd)
 
-print(pcd)
+# print(pcd)
 
 # Export fourier parameters to excel file
-exporter(A, phi, lambda_k, N, M, pts_perturbed, output_path)
+# exporter(A, phi, lambda_k, N, M, pts_perturbed, output_path)
 
-np.savetxt("coords.csv", pts_perturbed, delimiter=",")
+# np.savetxt("coords.csv", pts_perturbed, delimiter=",")
 
 print("Calculations completed in %.2f seconds" % (time.time() - start_time))

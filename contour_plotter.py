@@ -19,9 +19,49 @@ import perturb
 
 def contour(phi, A, N, M, lambda_k):
     
-    # X/Y Domain should run from -lambda_k*N to lambda_k * N
-    # In other words, there are a maximum of 2*N modes each 
-    # of length lambda_k running in one domain direction
+    # Build a 1D plot for the simplest example
+
+    sp = 1000 # sample_points
+    x = np.linspace(-N*lambda_k,N*lambda_k,sp)
+    y = []
+    N_array = np.linspace(-N,N,2*N+1)
+    A_array = []
+    B_array = []
+    phi_array = lambda_k/4 * np.random.randn((2*N+1),) #np.zeros([2*N+1,])
+    for n in N_array:
+        A_array.append(lambda_k * (1 + np.random.randn()/4) * n**2 / N**2)
+    for xi in x:
+        B_array = np.cos(2*np.pi*N_array*xi / (lambda_k * N) + phi_array)
+        y.append((sum(A_array *  B_array)))
+    
+    fig,ax=plt.subplots(1,1)
+    plt.plot(x,y,color='red')
+    plt.grid(visible=True, which='Major', axis='both', linewidth=0.5)
+    ax.set_xticks(     np.linspace(-N*lambda_k     , N*lambda_k     , 5), fontname='Times New Roman', fontsize=16)
+    ax.set_yticks(     np.linspace(-N*lambda_k     , N*lambda_k     , 5), fontname='Times New Roman', fontsize=16)
+    ax.set_xticklabels(np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5), fontname='Times New Roman', fontsize=16) 
+    ax.set_yticklabels(np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5), fontname='Times New Roman', fontsize=16)
+    ax.set_xlabel('x (in)'                                              , fontname='Times New Roman', fontsize=18)
+    ax.set_ylabel('Roughness height (in)'                               , fontname='Times New Roman', fontsize=18)
+    ax.set_title( 'Quasi-Random 1D Full Domain'                         , fontname='Times New Roman', fontsize=20, fontweight='bold')
+    
+    # get current figure
+    figure = plt.gcf() 
+    figure.set_size_inches(8, 6)
+    
+    # when saving, specify the DPI
+    figure.savefig('Quasi-Random 1D Full Domain.png', dpi = 200)
+
+
+
+
+
+
+
+
+
+
+    # Contour Plot
 
     # Build a fake pts matrix
     samples = 512
@@ -40,14 +80,20 @@ def contour(phi, A, N, M, lambda_k):
     xpos = np.reshape(x, (samples, samples))
     ypos = np.reshape(y, (samples, samples))
     zpos = np.reshape(z, (samples, samples))
-    
+
     fig,ax=plt.subplots(1,1)
-    cp = ax.contourf(xpos, ypos, zpos, cmap=plt.cm.jet, levels=100)
+    cp =  ax.contourf(xpos, ypos, zpos, cmap=plt.cm.jet, levels=np.linspace(-lambda_k*1.25/1000, lambda_k*1.25/1000, 500))
     cb = fig.colorbar(cp)
-    cb.set_label('Roughness height [in]')
-    ax.set_title('Representative Roughness Contour Plot')
-    ax.set_xlabel('x (in)')
-    ax.set_ylabel('y (in)')
+    cb.set_ticks(               np.linspace(  -lambda_k/1000,   lambda_k/1000, 5),              fontname='Times New Roman', fontsize=16)
+    cb.set_ticklabels(np.around(np.linspace(  -lambda_k/1000,   lambda_k/1000, 5), decimals=3), fontname='Times New Roman', fontsize=16, fontweight='bold')
+    ax.set_xticks(              np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5)             , fontname='Times New Roman', fontsize=20)
+    ax.set_yticks(              np.linspace(-M*lambda_k/1000, N*lambda_k/1000, 5)             , fontname='Times New Roman', fontsize=16)
+    ax.set_xticklabels(         np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5)             , fontname='Times New Roman', fontsize=16)
+    ax.set_yticklabels(         np.linspace(-M*lambda_k/1000, N*lambda_k/1000, 5)             , fontname='Times New Roman', fontsize=16)
+    cb.set_label('Roughness height [in]'                                                      , fontname='Times New Roman', fontsize=18)
+    ax.set_xlabel('x (in)'                                                                    , fontname='Times New Roman', fontsize=18)
+    ax.set_ylabel('y (in)'                                                                    , fontname='Times New Roman', fontsize=18)
+    ax.set_title('Quasi-Random Contoured Full Domain'                                         , fontname='Times New Roman', fontsize=20, fontweight='bold')
     plt.gca().set_aspect('equal')
     
     # get current figure
@@ -55,4 +101,4 @@ def contour(phi, A, N, M, lambda_k):
     figure.set_size_inches(8, 6)
     
     # when saving, specify the DPI
-    figure.savefig("representative_contour.png", dpi = 200)
+    figure.savefig('Quasi-Random Contoured Full Domain.png', dpi = 200)

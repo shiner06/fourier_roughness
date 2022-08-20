@@ -15,18 +15,25 @@ integer                                             :: i, j
 
 do i =  -N, N
     do j = -M, M
-        if (((i**2 + j**2) .gt. 0) .and. ((i**2 + j**2) .lt. N**2 + 1)) then
+        if ((i**2 + j**2) .lt. N**2 + 1) then
             randn = random_normal()
-            A(i, j) = (lambda_k - randn) * ((real(i)**2 + real(j)**2)/(N**2))
+            A(i, j) = lambda_k*(1 + randn/4) * ((real(i)**2 + real(j)**2)/(N**2)) 
         else
             A(i, j) = 0
         end if
         randn = random_normal()
-        phi(i, j) = 10 * randn
+        phi(i, j) = lambda_k/4*randn
     end do
 end do
 
 end subroutine
+
+
+
+
+
+
+
 
 
 
@@ -54,8 +61,6 @@ real(8)                                                   :: inv_maxr
 real(8)                                                   :: inv_lambda
 real(8)                                                   :: trans_point
 real(8)                                                   :: min_radius
-real(8)                                                   :: scale_height
-real(8)                                                   :: inv_scale_height
 integer                                                   :: i, j
 
 do i = 0, sample_points-1
@@ -95,8 +100,6 @@ trans_point         = 5750
 min_radius          = 650
 inv_maxr            = 1 / maxval(r(:))
 inv_lambda          = 1 / (lambda_k * N)
-scale_height        = 2*N
-inv_scale_height    = 1 / scale_height
 
 ! Perturbation Loop
 ! - Perturb all sampled points in the radial direction between bounds
@@ -106,18 +109,18 @@ inv_scale_height    = 1 / scale_height
 do i = 0, sample_points-1
     if ((x(i).gt.bounds(1)).and.(x(i).le.(trans_point))) then
         B = cos((2 * pi * N_mat * th(i) * inv_lambda) + (2 * pi * M_mat * x(i) * inv_lambda) + phi)
-        double_sum(i) = sum(A*B) * inv_scale_height
-!        if (abs(double_sum(i)) .gt. max_height) then
+        double_sum(i) = sum(A*B) / (2*N+1)
+!        if (double_sum(i) .gt. max_height) then
 !           double_sum(i) = max_height
 !        end if
-        r(i) = r(i) + abs(double_sum(i)) * r(i) * inv_maxr
+        r(i) = r(i) + double_sum(i) * r(i) * inv_maxr
     else if ((x(i).gt.(trans_point)).and.(x(i).le.(bounds(2))).and.(r(i).gt.(min_radius))) then
         B = cos((2 * pi * N_mat * th(i) * inv_lambda) + (2 * pi * M_mat * x(i) * inv_lambda) + phi)
-        double_sum(i) = sum(A*B) * inv_scale_height
-!        if (abs(double_sum(i)) .gt. max_height) then
+        double_sum(i) = sum(A*B) / (2*N+1)
+!        if (double_sum(i) .gt. max_height) then
 !            double_sum(i) = max_height
 !        end if
-        r(i) = r(i) + abs(double_sum(i)) * r(i) * inv_maxr
+        r(i) = r(i) + double_sum(i) * r(i) * inv_maxr
     end if
 end do
 
@@ -134,6 +137,13 @@ do i = 0, sample_points-1
 end do
 
 end subroutine
+
+
+
+
+
+
+
 
 
 
@@ -154,9 +164,7 @@ real(8), intent(out), dimension(0:(sample_points)-1)                            
 real(8), dimension(0:sample_points-1)                                           :: double_sum
 real(8), dimension(-N:N, -N:N)                                                  :: N_mat, M_mat, B
 real(8)                                                                         :: pi = 4.0 * ATAN(1.0)
-real(8)                                                                         :: inv_lambda
-real(8)                                                                         :: scale_height
-real(8)                                                                         :: inv_scale_height
+real(8)                                                                         :: inv_lambda_n, inv_lambda_m
 integer                                                                         :: i, j
 
 do i = 0, sample_points-1
@@ -173,15 +181,15 @@ do j = -M, M
   M_mat(:,j) = j
 end do
 
-inv_lambda          = 1 / (lambda_k * N)
-scale_height        = 2*N
-inv_scale_height    = 1 / scale_height
+inv_lambda_n   = 1 / (lambda_k * N)
+inv_lambda_m   = 1 / (lambda_k * M)
+
 
 ! Perturbation Loop
 do i = 0, sample_points-1
-        B = cos((2 * pi * N_mat * x(i) * inv_lambda) + (2 * pi * M_mat * y(i) * inv_lambda) + phi)
-        double_sum(i) = sum(A*B) * inv_scale_height
-        z(i) = abs(double_sum(i))
+        B = cos((2 * pi * N_mat * x(i) * inv_lambda_n) + (2 * pi * M_mat * y(i) * inv_lambda_m) + phi)
+        double_sum(i) = sum(A*B) / (2*N+1)
+        z(i) = double_sum(i)
 end do
 
 ! Convert coordinates back to inches
@@ -190,6 +198,13 @@ y(:) = y(:) / 1000
 z(:) = z(:) / 1000 
 
 end subroutine
+
+
+
+
+
+
+
 
 
 

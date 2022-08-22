@@ -17,7 +17,7 @@ do i =  -N, N
     do j = -M, M
         if ((i**2 + j**2) .lt. N**2 + 1) then
             randn = random_normal()
-            A(i, j) = lambda_k*(1 + randn/4) * ((real(i)**2 + real(j)**2)/(N**2)) 
+            A(i, j) = lambda_k * (1 + randn/4) * ((real(i)**2 + real(j)**2)/(N**2))
         else
             A(i, j) = 0
         end if
@@ -56,9 +56,8 @@ real(8), dimension(1:2)                                   :: bounds
 real(8), dimension(0:sample_points-1)                     :: x, y, z, r, th, double_sum
 real(8)                                                   :: pi = 4.0 * ATAN(1.0)
 real(8)                                                   :: max_height
-real(8)                                                   :: half_height
 real(8)                                                   :: inv_maxr
-real(8)                                                   :: inv_lambda
+real(8)                                                   :: inv_lambda_th, inv_lambda_x
 real(8)                                                   :: trans_point
 real(8)                                                   :: min_radius
 integer                                                   :: i, j
@@ -88,34 +87,32 @@ do j = -M, M
 end do
 
 ! Set limits and constants for personalization and speed
-! - max_height limits perturbation amplitudes to this quantity
-! - trans_point is a location upstream of internal geometry that should not be perturbed (units are mils)
-! - min_radius is a location outside of internal geometry that should not be perturbed
-! - inv_maxr and inv_lambda are used for speed due to cost of division
-! - scale_height is a scaling factor to reduce the double sum
-! - inv_scale_height is a dividor to reduce the double sum
+! max_height limits perturbation amplitudes to this quantity
+! trans_point is a location upstream of internal geometry that should not be perturbed (units are mils)
+! min_radius is a location outside of internal geometry that should not be perturbed
+! inv_maxr and inv_lambda are used for speed due to cost of division
+! scale_height is a scaling factor to reduce the double sum
 max_height          = 1.2 * lambda_k 
-half_height         = 0.5 * lambda_k
 trans_point         = 5750
 min_radius          = 650
 inv_maxr            = 1 / maxval(r(:))
-inv_lambda          = 1 / (lambda_k * N)
+inv_lambda_th       = 1 / (lambda_k * N)
+inv_lambda_x        = 1 / (lambda_k * M)
 
 ! Perturbation Loop
-! - Perturb all sampled points in the radial direction between bounds
-! - Give flat tops to any peaks that surpassed max_height due to frequency doubling
-! - Else if statement avoids perturb internal geometry
-! - r(i) * inv_maxr scales perturbations linearly from the min to max radius
+! Perturb all sampled points in the radial direction between bounds
+! Else if statement avoids perturb internal geometry
+! r(i) * inv_maxr scales perturbations linearly from the min to max radius
 do i = 0, sample_points-1
     if ((x(i).gt.bounds(1)).and.(x(i).le.(trans_point))) then
-        B = cos((2 * pi * N_mat * th(i) * inv_lambda) + (2 * pi * M_mat * x(i) * inv_lambda) + phi)
+        B = cos((2 * pi * N_mat * th(i) * inv_lambda_th) + (2 * pi * M_mat * x(i) * inv_lambda_x) + phi)
         double_sum(i) = sum(A*B) / (2*N+1)
 !        if (double_sum(i) .gt. max_height) then
 !           double_sum(i) = max_height
 !        end if
         r(i) = r(i) + double_sum(i) * r(i) * inv_maxr
     else if ((x(i).gt.(trans_point)).and.(x(i).le.(bounds(2))).and.(r(i).gt.(min_radius))) then
-        B = cos((2 * pi * N_mat * th(i) * inv_lambda) + (2 * pi * M_mat * x(i) * inv_lambda) + phi)
+        B = cos((2 * pi * N_mat * th(i) * inv_lambda_th) + (2 * pi * M_mat * x(i) * inv_lambda_x) + phi)
         double_sum(i) = sum(A*B) / (2*N+1)
 !        if (double_sum(i) .gt. max_height) then
 !            double_sum(i) = max_height
@@ -125,7 +122,7 @@ do i = 0, sample_points-1
 end do
 
 ! Convert coordinates back to cartesian
-x(:) = x(:) / 1000              ! axial coordinates, mils to inches
+x(:) = x(:) / 1000              ! axial  coordinates, mils to inches
 y(:) = r(:) * cos(th(:)) / 1000 ! radial coordinates, mils to inches
 z(:) = r(:) * sin(th(:)) / 1000 ! radial coordinates, mils to inches
 
@@ -162,9 +159,9 @@ real(8), intent(in), dimension(-N:N, -M:M)                                      
 real(8), intent(in), dimension(0:(sample_points)-1,2)                           :: pts
 real(8), intent(out), dimension(0:(sample_points)-1)                            :: x, y, z
 real(8), dimension(0:sample_points-1)                                           :: double_sum
-real(8), dimension(-N:N, -N:N)                                                  :: N_mat, M_mat, B
+real(8), dimension(-N:N, -M:M)                                                  :: N_mat, M_mat, B
 real(8)                                                                         :: pi = 4.0 * ATAN(1.0)
-real(8)                                                                         :: inv_lambda_n, inv_lambda_m
+real(8)                                                                         :: inv_lambda_x, inv_lambda_y
 integer                                                                         :: i, j
 
 do i = 0, sample_points-1
@@ -181,13 +178,13 @@ do j = -M, M
   M_mat(:,j) = j
 end do
 
-inv_lambda_n   = 1 / (lambda_k * N)
-inv_lambda_m   = 1 / (lambda_k * M)
+inv_lambda_x   = 1 / (lambda_k * N)
+inv_lambda_y   = 1 / (lambda_k * M)
 
 
 ! Perturbation Loop
 do i = 0, sample_points-1
-        B = cos((2 * pi * N_mat * x(i) * inv_lambda_n) + (2 * pi * M_mat * y(i) * inv_lambda_m) + phi)
+        B = cos((2 * pi * N_mat * x(i) * inv_lambda_x) + (2 * pi * M_mat * y(i) * inv_lambda_y) + phi)
         double_sum(i) = sum(A*B) / (2*N+1)
         z(i) = double_sum(i)
 end do

@@ -18,7 +18,7 @@ Created on Tue Dec  8 15:21:43 2020
 from initialize import mesh_reader, point_cloud_writer
 from excel_writer import exporter
 from bar_graph_3d import bar_graph
-from contour_plotter import contour
+from example_plots import line_plot, contour_plot
 import open3d as o3d
 import os
 import time
@@ -35,9 +35,9 @@ mesh_file   = "Common_Poly_Sharp_Tip_Rigid_10K_Rotated.STL"
 # Alter these fourier series function parameters
 # The length of the sharp tip is 7.5 inches
 # 7.5 = 2*N * lambda_k
-N=10                 # Upper limit of summation
-M=40               # Upper limit of summation
-lambda_k=50        # Roughness design minimum wavelength in mils
+N=20                # Upper limit of summation
+M=4                 # Upper limit of summation
+lambda_k=250        # Roughness design minimum wavelength in mils
 ##############################################################################
 
 # Read an .STL or .PLY mesh, pass to point cloud writer
@@ -53,8 +53,11 @@ lambda_k=50        # Roughness design minimum wavelength in mils
 print("Preparing randomized amplitudes and phases...")
 A, phi = perturb.wave_prep(N, M, lambda_k)
 
+# Plot a representative line plot
+line_plot(phi, A, N, M, lambda_k)
+
 # Plot a representative contour in cartesian coordinates
-contour(phi, A, N, M, lambda_k)
+contour_plot(phi, A, N, M, lambda_k)
 
 # Plot the A matrix
 # bar_graph(A, N, M, lambda_k)

@@ -22,7 +22,7 @@ do i =  -N, N
             A(i, j) = 0
         end if
         randn = random_normal()
-        phi(i, j) = lambda_k/4*randn
+        phi(i, j) = lambda_k * randn / 4
     end do
 end do
 
@@ -51,7 +51,7 @@ real(8), intent(in)                                       :: lambda_k
 real(8), intent(in), dimension(-N:N, -M:M)                :: phi, A
 real(8), intent(in), dimension(0:sample_points-1,3)       :: pts
 real(8), intent(out), dimension(0:sample_points-1,3)      :: pts_perturbed
-real(8), dimension(-N:N, -N:N)                            :: N_mat, M_mat, B
+real(8), dimension(-N:N, -M:M)                            :: N_mat, M_mat, B
 real(8), dimension(1:2)                                   :: bounds
 real(8), dimension(0:sample_points-1)                     :: x, y, z, r, th, double_sum
 real(8)                                                   :: pi = 4.0 * ATAN(1.0)
@@ -71,7 +71,7 @@ end do
 ! Set axial boundaries (stagnation + 10 mils to [end - X] mils)
 bounds = (/minval(x(:))+10, maxval(x(:))-250/)
 
-! Map radial coordinates into cylindrical coordinate system
+! Map cartesian coordinates into cylindrical coordinate system
 do i = 0, sample_points-1
   th(i) = atan2(z(i),y(i))
   r(i) = sqrt(y(i)**2 + z(i)**2)
@@ -92,7 +92,7 @@ end do
 ! min_radius is a location outside of internal geometry that should not be perturbed
 ! inv_maxr and inv_lambda are used for speed due to cost of division
 ! scale_height is a scaling factor to reduce the double sum
-max_height          = 1.2 * lambda_k 
+max_height          = 1.25 * lambda_k 
 trans_point         = 5750
 min_radius          = 650
 inv_maxr            = 1 / maxval(r(:))
@@ -105,24 +105,24 @@ inv_lambda_x        = 1 / (lambda_k * M)
 ! r(i) * inv_maxr scales perturbations linearly from the min to max radius
 do i = 0, sample_points-1
     if ((x(i).gt.bounds(1)).and.(x(i).le.(trans_point))) then
-        B = cos((2 * pi * N_mat * th(i) * inv_lambda_th) + (2 * pi * M_mat * x(i) * inv_lambda_x) + phi)
+        B = cos((2 * pi * N_mat * th(i) * r(i) * inv_lambda_th) + (2 * pi * M_mat * x(i) * inv_lambda_x) + phi)
         double_sum(i) = sum(A*B) / (2*N+1)
-!        if (double_sum(i) .gt. max_height) then
-!           double_sum(i) = max_height
-!        end if
+        if (double_sum(i) .gt. max_height) then
+           double_sum(i) = max_height
+        end if
         r(i) = r(i) + double_sum(i) * r(i) * inv_maxr
     else if ((x(i).gt.(trans_point)).and.(x(i).le.(bounds(2))).and.(r(i).gt.(min_radius))) then
-        B = cos((2 * pi * N_mat * th(i) * inv_lambda_th) + (2 * pi * M_mat * x(i) * inv_lambda_x) + phi)
+        B = cos((2 * pi * N_mat * th(i) * r(i) * inv_lambda_th) + (2 * pi * M_mat * x(i) * inv_lambda_x) + phi)
         double_sum(i) = sum(A*B) / (2*N+1)
-!        if (double_sum(i) .gt. max_height) then
-!            double_sum(i) = max_height
-!        end if
+        if (double_sum(i) .gt. max_height) then
+            double_sum(i) = max_height
+        end if
         r(i) = r(i) + double_sum(i) * r(i) * inv_maxr
     end if
 end do
 
 ! Convert coordinates back to cartesian
-x(:) = x(:) / 1000              ! axial  coordinates, mils to inches
+x(:) = x(:)              / 1000 ! axial  coordinates, mils to inches
 y(:) = r(:) * cos(th(:)) / 1000 ! radial coordinates, mils to inches
 z(:) = r(:) * sin(th(:)) / 1000 ! radial coordinates, mils to inches
 
@@ -186,7 +186,7 @@ inv_lambda_y   = 1 / (lambda_k * M)
 do i = 0, sample_points-1
         B = cos((2 * pi * N_mat * x(i) * inv_lambda_x) + (2 * pi * M_mat * y(i) * inv_lambda_y) + phi)
         double_sum(i) = sum(A*B) / (2*N+1)
-        z(i) = double_sum(i)
+        z(i) = (double_sum(i))
 end do
 
 ! Convert coordinates back to inches

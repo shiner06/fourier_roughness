@@ -35,7 +35,6 @@ def point_cloud_writer(mesh, sample_points):
 
     print("Sampling mesh for point cloud ...")
     pcd = mesh.sample_points_poisson_disk(number_of_points=sample_points, init_factor=3)
-    # pcd = mesh.sample_points_uniformly(number_of_points=sample_points)
     print(pcd)
 
     # Write out the point cloud

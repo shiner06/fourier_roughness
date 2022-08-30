@@ -13,57 +13,63 @@ Created on Tues Aug 23 2022
     
     Texas A & M University  
 """
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import numpy as np
-import perturb
+import math
 
-def point_cloud_plotter(pts, pts_perturbed):
-
+def cloud_plot(pts, pts_perturbed):
+        
+    # Define nominal sampled points in cartesian
+    x = pts[:,0]
+    y = pts[:,1]
+    z = pts[:,2]
+    
+    # Define perturbed points in cartesian
+    xp = pts_perturbed[:,0]
+    yp = pts_perturbed[:,1]
+    zp = pts_perturbed[:,2]
+    
+    th = []
+    r  = []
+    # Map cartesian coordinates into cylindrical coordinate system
+    for i in range(len(pts)):
+      th.append(math.atan2(z[i], y[i]))
+      r.append( np.sqrt(y[i]**2 + z[i]**2))
+    
+    th_perturbed = []
+    r_perturbed  = []
+    # Map cartesian coordinates into cylindrical coordinate system
+    for i in range(len(pts_perturbed)):
+      th_perturbed.append(math.atan2(zp[i], yp[i]))
+      r_perturbed.append( np.sqrt(yp[i]**2 + zp[i]**2))
+      
+    # Creat a color assignment defining the extent of perturbation
+    subtracted   = np.subtract(r_perturbed, r)
+    absval       = np.abs(subtracted)
+    fracs        = subtracted.astype(float)/absval.max()
+    norm         = colors.Normalize(fracs.min(), fracs.max())
+    color_values = cm.jet(norm(fracs.tolist()))
+        
     # Contour Plot
     title = 'Perturbed Point Cloud'
     
-    # Map cartesian coordinates into cylindrical coordinate system
-    # for i in sample_points-1
-    #   th(i) = atan2(z(i),y(i))
-    #   r(i) = sqrt(y(i)**2 + z(i)**2)
-    # end do
-
-    # # Build a fake pts matrix
-    # samples = 512
-    # sample_points = samples**2
-    # xpos = np.linspace(-N*lambda_k, N*lambda_k, samples)
-    # ypos = np.linspace(-M*lambda_k, M*lambda_k, samples)
-    # xpos, ypos = np.meshgrid(xpos, ypos)
-    # xpos = xpos.flatten()
-    # ypos = ypos.flatten()
-    # pts = np.zeros([sample_points, 2])
-    # pts[:,0] = xpos
-    # pts[:,1] = ypos
+    fig = plt.figure()
+    ax  = Axes3D(fig)
+    ax.set_xlabel('x (in)')
+    ax.set_ylabel('y (in)')
+    ax.set_zlabel('z (in)')
+    ax.view_init(40, 245)
+    ax.set_title(title)
+    ax.scatter(x, y, z, s=20, depthshade=True, c = color_values)
+    ax.set_box_aspect((np.ptp(x), np.ptp(y), np.ptp(z)))
     
-    # x, y, z = perturb.cart_fourier_series(pts, phi, A, lambda_k, sample_points, N, M)
+    # get current figure
+    figure = plt.gcf() 
+    figure.set_size_inches(8, 6)
     
-    # xpos = np.reshape(x, (samples, samples))
-    # ypos = np.reshape(y, (samples, samples))
-    # zpos = np.reshape(z, (samples, samples))
+    # when saving, specify the DPI
+    figure.savefig(title + '.png', dpi = 200)
     
-    # fig,ax=plt.subplots(1,1)
-    # cp =  ax.contourf(xpos, ypos, zpos, cmap=plt.cm.jet, levels=np.linspace(-lambda_k*1.25/1000, lambda_k*1.25/1000, 500))
-    # cb = fig.colorbar(cp)
-    # cb.set_ticks(                np.linspace(  -lambda_k/1000,   lambda_k/1000, 5),              fontname='Times New Roman', fontsize=16)
-    # cb.set_ticklabels( np.around(np.linspace(  -lambda_k/1000,   lambda_k/1000, 5), decimals=3), fontname='Times New Roman', fontsize=16, fontweight='bold')
-    # ax.set_xticks(               np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5)             , fontname='Times New Roman', fontsize=20)
-    # ax.set_yticks(               np.linspace(-M*lambda_k/1000, M*lambda_k/1000, 5)             , fontname='Times New Roman', fontsize=16)
-    # ax.set_xticklabels(np.around(np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5), decimals=1), fontname='Times New Roman', fontsize=16)
-    # ax.set_yticklabels(np.around(np.linspace(-M*lambda_k/1000, M*lambda_k/1000, 5), decimals=1), fontname='Times New Roman', fontsize=16)
-    # cb.set_label('Roughness height [in]'                                                       , fontname='Times New Roman', fontsize=18)
-    # ax.set_xlabel('x (in)'                                                                     , fontname='Times New Roman', fontsize=18)
-    # ax.set_ylabel('y (in)'                                                                     , fontname='Times New Roman', fontsize=18)
-    # ax.set_title(title                                                                         , fontname='Times New Roman', fontsize=20, fontweight='bold')
-    # plt.gca().set_aspect('equal')
-    
-    # # get current figure
-    # figure = plt.gcf() 
-    # figure.set_size_inches(8, 6)
-    
-    # # when saving, specify the DPI
-    # figure.savefig(title + '.png', dpi = 200)

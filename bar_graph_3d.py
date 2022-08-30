@@ -41,8 +41,7 @@ def bar_graph(A, N, M, lambda_k):
     dy   = dx.copy()
     dz   = A.flatten()
     
-    offset          = dz + np.abs(dz.min())
-    fracs           = offset.astype(float)/offset.max()
+    fracs           = dz.astype(float)/dz.max()
     norm            = colors.Normalize(fracs.min(), fracs.max())
     color_values    = cm.jet(norm(fracs.tolist()))
 

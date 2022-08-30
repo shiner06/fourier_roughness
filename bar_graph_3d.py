@@ -67,4 +67,4 @@ def bar_graph(A, N, M, lambda_k):
     figure.set_size_inches(8, 6)
     
     # when saving, specify the DPI
-    figure.savefig("amplitude_coefficients.png", dpi = 200)
+    figure.savefig("Amplitude Coefficients.png", dpi = 200)

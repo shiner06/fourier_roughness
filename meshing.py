@@ -91,8 +91,8 @@ def poisson_mesh(pcd, pcd_perturbed, output_file):
         print("Non-manifold edges removed from nominal mesh")
         
     # Subdivide with loop algorithm
-    print("Subdividing perturbed mesh for high resolution...")
-    mesh = mesh.subdivide_loop(number_of_iterations=2)
+    print("Subdividing nominal mesh for high resolution...")
+    mesh = mesh.subdivide_loop(number_of_iterations=3)
     
     # Remove non-manifold edges if present after subdividing
     if not mesh.is_edge_manifold():
@@ -137,7 +137,7 @@ def poisson_mesh(pcd, pcd_perturbed, output_file):
     for i, pt_perturbed in enumerate(pts_perturbed):
       th_perturbed.append(math.atan2(zp[i], yp[i]))
       r_perturbed.append( np.sqrt(yp[i]**2 + zp[i]**2))
-      
+    
     # If the radius of the perturbed point is less than the nominal radius of 
     # its nearest neighbor, multiply the distance by -1, otherwise do nothing
     for i, each_perturbed_radius in enumerate(r_perturbed):
@@ -145,12 +145,10 @@ def poisson_mesh(pcd, pcd_perturbed, output_file):
             dist[i] = dist[i] * -1
     
     # Creat a color assignment defining the extent of perturbation
-    #subtracted   = np.subtract(r_perturbed, r)
-    #absval       = np.abs(subtracted)
     fracs        = dist/abs(dist).max()
     norm         = colors.Normalize(fracs.min(), fracs.max())
     mesh_colors  = cm.jet(norm(fracs.tolist()))
-    mesh_colors = mesh_colors[:, :3]
+    mesh_colors  = mesh_colors[:, :3]
     perturbed_mesh.vertex_colors = o3d.utility.Vector3dVector(mesh_colors)
     
     vis = o3d.visualization.Visualizer()

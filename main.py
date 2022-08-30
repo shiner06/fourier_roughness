@@ -47,7 +47,7 @@ lambda_k=150         # Roughness design minimum wavelength in mils
 mesh = mesh_reader(input_path, mesh_file)
 
 #  Poisson disk sampling to create point cloud
-sample_points = 100000
+sample_points = 1000
 
 pcd = point_cloud_writer(mesh, sample_points)
 

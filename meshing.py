@@ -15,8 +15,7 @@ Created on Wed Dec  9 12:30:30 2020
 """
 import open3d as o3d
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+import matplotlib.cm as color_map
 import math
 import matplotlib.colors as colors
 import os
@@ -24,7 +23,7 @@ from scipy.spatial import KDTree
 
 
 
-def poisson_mesh(pcd, pcd_perturbed, output_file):
+def poisson_mesh(pcd, pcd_perturbed):
     """
     Using the perturbed point cloud object (pcd_perturbed), reconstruct a surface with the
     poisson surface reconstruction algorithm
@@ -34,28 +33,21 @@ def poisson_mesh(pcd, pcd_perturbed, output_file):
     # Mesh the Perturbed Point Cloud
     ###########################################################################
     
-    print("Creating Perturbed Surface Mesh...")
+    print("Creating perturbed surface mesh...")
     
     # Create a new mesh for the perturbed point cloud
-    perturbed_mesh, perturbed_mesh_densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd_perturbed, depth=9)
+    perturbed_mesh, perturbed_mesh_densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd_perturbed, depth=10)
     
-    with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug):
-        triangle_clusters, cluster_n_triangles, cluster_area = (perturbed_mesh.cluster_connected_triangles())
-        triangle_clusters = np.asarray(triangle_clusters)
-        cluster_n_triangles = np.asarray(cluster_n_triangles)
-        largest_cluster_idx = cluster_n_triangles.argmax()
-        if triangle_clusters.any() != largest_cluster_idx:
-            print("Removing spurious clusters...")
-            triangles_to_remove = triangle_clusters != largest_cluster_idx
-            perturbed_mesh.remove_triangles_by_mask(triangles_to_remove)
-            print("Largest cluster maintained")
-    
-    # Visualize mesh density
-    #densities = np.asarray(perturbed_mesh_densities)
-    #density_colors = plt.get_cmap('plasma')((densities - densities.min()) / (densities.max() - densities.min()))
-    #density_colors = density_colors[:, :3]
-    #perturbed_mesh.vertex_colors = o3d.utility.Vector3dVector(density_colors)
-    #o3d.visualization.draw_geometries([perturbed_mesh])
+    # with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug):
+    triangle_clusters, cluster_n_triangles, cluster_area = (perturbed_mesh.cluster_connected_triangles())
+    triangle_clusters = np.asarray(triangle_clusters)
+    cluster_n_triangles = np.asarray(cluster_n_triangles)
+    largest_cluster_idx = cluster_n_triangles.argmax()
+    if triangle_clusters.any() != largest_cluster_idx:
+        print("Removing spurious clusters...")
+        triangles_to_remove = triangle_clusters != largest_cluster_idx
+        perturbed_mesh.remove_triangles_by_mask(triangles_to_remove)
+        print("Largest cluster maintained")
     
     # Remove non-Manifold edges if present
     if not perturbed_mesh.is_edge_manifold():
@@ -76,33 +68,38 @@ def poisson_mesh(pcd, pcd_perturbed, output_file):
     
     pts_perturbed = np.asarray(perturbed_mesh.vertices)
 
-                     
+    print("There are " + str(len(pts_perturbed)) + " vertices in the perturbed mesh")             
+
+
 
     ###########################################################################
     # Mesh the Nominal Point Cloud
     ###########################################################################
         
     # Create a new mesh for the perturbed point cloud
-    mesh, mesh_densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=9)
+    mesh, mesh_densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=10)
     
     # Remove non-Manifold edges if present
     if not mesh.is_edge_manifold():
         mesh.remove_non_manifold_edges()
-        print("Non-manifold edges removed from nominal mesh")
+        print("Non-manifold edges removed from smooth mesh")
         
     # Subdivide with loop algorithm
-    print("Subdividing nominal mesh for high resolution...")
-    mesh = mesh.subdivide_loop(number_of_iterations=3)
+    print("Subdividing smooth mesh for high resolution...")
+    mesh = mesh.subdivide_loop(number_of_iterations=1)
     
     # Remove non-manifold edges if present after subdividing
     if not mesh.is_edge_manifold():
         mesh.remove_non_manifold_edges()
-        print("Non-manifold edges removed from nominal mesh after subdivision")
+        print("Non-manifold edges removed from smooth mesh after subdivision")
     
     # Calculate normals
     mesh.compute_vertex_normals()
+    mesh.paint_uniform_color([1,1,1])
     
     pts = np.asarray(mesh.vertices)
+    
+    print("There are " + str(len(pts)) + " vertices in the smooth mesh") 
     
     
     
@@ -138,31 +135,62 @@ def poisson_mesh(pcd, pcd_perturbed, output_file):
       th_perturbed.append(math.atan2(zp[i], yp[i]))
       r_perturbed.append( np.sqrt(yp[i]**2 + zp[i]**2))
     
+    # Uncomment this section if no longer displacing the pattern by lambda_k/2
     # If the radius of the perturbed point is less than the nominal radius of 
     # its nearest neighbor, multiply the distance by -1, otherwise do nothing
-    for i, each_perturbed_radius in enumerate(r_perturbed):
-        if each_perturbed_radius < r[idx[i]]:
-            dist[i] = dist[i] * -1
+    # for i, each_perturbed_radius in enumerate(r_perturbed):
+    #     if each_perturbed_radius < r[idx[i]]:
+    #         dist[i] = dist[i] * -1
     
-    # Creat a color assignment defining the extent of perturbation
-    fracs        = dist/abs(dist).max()
+    # Create a color assignment defining the extent of perturbation
+    # print(np.amax(np.abs(dist)))
+    fracs        = dist / np.amax(np.abs(dist))
     norm         = colors.Normalize(fracs.min(), fracs.max())
-    mesh_colors  = cm.jet(norm(fracs.tolist()))
+    mesh_colors  = color_map.jet(norm(fracs.tolist()))
     mesh_colors  = mesh_colors[:, :3]
     perturbed_mesh.vertex_colors = o3d.utility.Vector3dVector(mesh_colors)
     
-    vis = o3d.visualization.Visualizer()
+    
+    
+    ###########################################################################
+    # Save Images and Mesh STL
+    ###########################################################################
+    
+    # Save the Perturbed Mesh Contour Image
+    vis = o3d.visualization.VisualizerWithEditing()
     vis.create_window(visible=False)
     vis.add_geometry(perturbed_mesh)
     vis.update_geometry(perturbed_mesh)
-    vis.poll_events()
+    view = vis.get_view_control()
+    render = vis.get_render_option()
+    render.background_color = [0.4, 0.4, 0.4]
+    vis.reset_view_point(True)
+    view.set_zoom(0.5)
     vis.update_renderer()
-    vis.capture_screen_image(os.getcwd() + '/Mesh Contour.png')
+    vis.poll_events()
+    vis.capture_screen_image(os.getcwd() + '/Perturbed Mesh.png')
     vis.destroy_window()
-    
-    #o3d.visualization.draw_geometries([perturbed_mesh])
-    
-    # Write a Mesh File
-    o3d.io.write_triangle_mesh(output_file, perturbed_mesh)
+    vis = []
+    view = []
+    render = []
+
+    # Save the Smooth Mesh Contour Image
+    vis = o3d.visualization.VisualizerWithEditing()
+    vis.create_window(visible=False)
+    vis.add_geometry(mesh)
+    vis.update_geometry(mesh)
+    view = vis.get_view_control()
+    render = vis.get_render_option()
+    render.background_color = [0.4, 0.4, 0.4]
+    vis.reset_view_point(True)
+    view.set_zoom(0.5)
+    vis.update_renderer()
+    vis.poll_events()
+    vis.capture_screen_image(os.getcwd() + '/Smooth Mesh.png')
+    vis.destroy_window()
+        
+    # Write Mesh Files
+    o3d.io.write_triangle_mesh('Perturbed Mesh.stl', perturbed_mesh)
+    o3d.io.write_triangle_mesh('Smooth Mesh.stl'  , mesh)
     print("Perturbed surface meshing complete")
     print(perturbed_mesh)

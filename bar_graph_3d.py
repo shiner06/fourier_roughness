@@ -24,8 +24,8 @@ def bar_graph(A, N, M, lambda_k):
     ax  = Axes3D(fig)
     
     # Work out matrix dimensions and create mesh
-    lx          = len(A[0])            
-    ly          = len(A[:,0])
+    lx          = np.size(A[0,:])
+    ly          = np.size(A[:,0])
     xpos        = np.arange(0,lx,1)
     ypos        = np.arange(0,ly,1)
     xpos, ypos  = np.meshgrid(xpos, ypos)
@@ -36,22 +36,22 @@ def bar_graph(A, N, M, lambda_k):
     zpos = np.zeros(lx*ly)
     
     # Control the thickness/spacing of bars and tick marks
-    scale_factor    = 0.5
-    dx   = scale_factor * np.ones_like(zpos)
-    dy   = dx.copy()
-    dz   = A.flatten()
+    scale_factor = 0.5
+    dx           = scale_factor * np.ones_like(zpos)
+    dy           = dx.copy()
+    dz           = A.flatten()
     
-    fracs           = dz.astype(float)/dz.max()
+    fracs           = dz.astype(np.float)/dz.max()
     norm            = colors.Normalize(fracs.min(), fracs.max())
     color_values    = cm.jet(norm(fracs.tolist()))
 
     ax.bar3d(xpos,ypos,zpos, dx, dy, dz, color=color_values)
     
-    x_ticks = np.linspace(1,len(range(2*N+1)),int(2*N*scale_factor+1))
-    y_ticks = np.linspace(1,len(range(2*M+1)),int(2*M*scale_factor+1))
-    z_ticks = np.linspace(0,int(lambda_k),int(lambda_k/50)+1).astype(int)
-    x_tick_labels = np.round(np.linspace(-N,N,int((2*N)*scale_factor)+1)).astype(int)
-    y_tick_labels = np.round(np.linspace(-M,M,int((2*M)*scale_factor)+1)).astype(int)
+    x_ticks = np.linspace(1,2*N+1,np.int(N/2 + 1))
+    y_ticks = np.linspace(1,2*M+1,np.int(M/2 + 1))
+    z_ticks = np.linspace(0,np.int(lambda_k),np.int(lambda_k/50)+1).astype(np.int)
+    x_tick_labels = np.round(np.linspace(-N,N,np.int(N/2 + 1))).astype(np.int)
+    y_tick_labels = np.round(np.linspace(-M,M,np.int(N/2 + 1))).astype(np.int)
     
     ax.w_xaxis.set_ticks(ticks = x_ticks, labels=x_tick_labels)
     ax.w_yaxis.set_ticks(ticks = y_ticks, labels=y_tick_labels)
@@ -59,12 +59,11 @@ def bar_graph(A, N, M, lambda_k):
     ax.set_xlabel('N')
     ax.set_ylabel('M')
     ax.set_zlabel('Amplitude Coefficient (mils)')
-    ax.view_init(50, -45)
-    # plt.show()
+    ax.view_init(45, -45)
+    ax.dist = 12
     
     # get current figure
-    figure = plt.gcf() 
-    figure.set_size_inches(8, 6)
+    fig.set_size_inches(8, 6)
     
     # when saving, specify the DPI
-    figure.savefig("Amplitude Coefficients.png", dpi = 200)
+    fig.savefig("Amplitude Coefficients.png", dpi = 200)

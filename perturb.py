@@ -5,7 +5,7 @@ def wave_prep(N, M, lambda_k):
     Accepts number of harmonics, N and M, and min wavelength, lambda_k,
     then returns randomized amplitude, A, and phase shift, phi
     """
-    
+    print("Preparing randomized amplitudes and phases...")
     A = np.zeros([2*N+1,2*M+1])
     phi = np.zeros([2*N+1,2*M+1])
     for i, n in enumerate(np.arange(-N, N+1)):
@@ -25,14 +25,12 @@ def axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M):
     Accepts x y z points in the pts array, with other
     parameters for the fourier series perturbation process
     """
-    
+    print("Perturbing point cloud...")
+
     # convert coordinates from inches to mils
     x = pts[:,0] * 1000
     y = pts[:,1] * 1000
     z = pts[:,2] * 1000
-    
-    # Set axial boundaries for linear tapering
-    bounds = [50, 550, 6250, 6750]
     
     # Map cartesian coordinates into cylindrical coordinate system
     th = np.zeros(sample_points)
@@ -51,13 +49,15 @@ def axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M):
         M_mat[:,j] = m
     
     # Set limits and constants for personalization and speed
+    # bounds defines axial boundaries for linear tapering
     # max_height limits perturbation amplitudes to this quantity
     # trans_point is a location upstream of internal geometry that should not be perturbed (units are mils)
     # min_radius is a location outside of internal geometry that should not be perturbed
     # inv_maxr and inv_lambda are used for speed due to cost of division
     # scale_height is a scaling factor to reduce the double sum
     
-    max_height    = 1.25 * lambda_k 
+    bounds = [5, 25, 6250, 6750]
+    max_height    = 1.25 * lambda_k / 2
     trans_point   = 5000
     min_radius    = 650
     inv_maxr      = 1 / np.max(r[:])

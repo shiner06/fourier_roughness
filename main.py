@@ -30,27 +30,27 @@ start_time = time.time()
 input_path  = os.getcwd()+"/"
 output_path = os.getcwd()+"/"
 mesh_file   = "Common Poly Medium Tip.STL"
+perturbed_mesh_file = "Perturbed Mesh.STL"
 
 ##############################################################################
 # Alter these fourier series function parameters
 # The length of the sharp tip is 7.5", the base circumference is 6.855"
 # 3.5 / 0.050 = 70, 3.5 / 0.100 = 35, and 3.5 / 0.150 = 24$.
-N=70                 # Upper limit of summation
-M=70                 # Upper limit of summation
-lambda_k=50        # The desired roughness wavelength (trough to trough) diameter in mils
+N=140                 # Upper limit of summation
+M=140                 # Upper limit of summation
+lambda_k=25        # The desired roughness wavelength (trough to trough) diameter in mils
 ##############################################################################
 
 # Read an .STL or .PLY mesh, pass to point cloud writer
 mesh = mesh_reader(input_path, mesh_file)
 
 #  Poisson disk sampling to create point cloud
-sample_points = 100000
+sample_points = 10000000
 
 pcd = point_cloud_writer(mesh, sample_points)
 
 # Create amplitude and phase shift matrices
 # to recompile perturb, enter: f2py -m perturb -c perturb.f90
-print("Preparing randomized amplitudes and phases...")
 A, phi = wave_prep(N, M, lambda_k)
 
 # Plot a representative line plot
@@ -63,7 +63,6 @@ contour_plot(phi, A, N, M, lambda_k)
 bar_graph(A, N, M, lambda_k)
 
 # Perturb point cloud with axisymmetric fourier series
-print("Perturbing point cloud...")
 pts = np.asarray(pcd.points)
 pts_perturbed = axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M)
 
@@ -78,11 +77,8 @@ pcd_perturbed.points.extend(pts_perturbed)
 # Write a new point cloud
 o3d.io.write_point_cloud("point_cloud_perturbed.xyz", pcd_perturbed)
 
-# Write a new mesh from the point cloud
-poisson_mesh(pcd, pcd_perturbed)
-
 # Export fourier parameters to excel file
-exporter(A, phi, lambda_k, N, M, pts_perturbed, output_path)
+exporter(A, phi, lambda_k, N, M, output_path)
 
 # Export the perturbed coordinates
 np.savetxt("coords.csv", pts_perturbed, delimiter=",")

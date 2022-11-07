@@ -24,7 +24,7 @@ from scipy.spatial import KDTree
 input_path          = os.getcwd()+"/"
 output_path         = os.getcwd()+"/"
 smooth_mesh_file    = "Common Poly Medium Tip.STL"
-perturbed_mesh_file = "Perturbed Mesh.STL"
+perturbed_mesh_file = "2.0x Perturbed Mesh.STL"
 
 ###########################################################################
 # Import and color the smooth mesh

@@ -18,7 +18,7 @@ from initialize import mesh_reader, point_cloud_writer
 from excel_writer import exporter
 from bar_graph_3d import bar_graph
 from example_plots import line_plot, contour_plot
-from meshing import poisson_mesh
+# from meshing import poisson_mesh
 import open3d as o3d
 import os
 import time
@@ -34,11 +34,11 @@ perturbed_mesh_file = "Perturbed Mesh.STL"
 
 ##############################################################################
 # Alter these fourier series function parameters
-# The length of the sharp tip is 7.5", the base circumference is 6.855"
-# 3.5 / 0.050 = 70, 3.5 / 0.100 = 35, and 3.5 / 0.150 = 24$.
-N=140                 # Upper limit of summation
-M=140                 # Upper limit of summation
-lambda_k=25        # The desired roughness wavelength (trough to trough) diameter in mils
+# The length of the sharp tip is 7.5", the base circumference is 6.855", roughly 7" inch average
+# 3.5 / 0.035 = 100, 3.5 / 0.050 = 70, and 3.5 / 0.070 = 50
+N=50              # Upper limit of summation
+M=50              # Upper limit of summation
+lambda_k=70       # The desired roughness wavelength (trough to trough) diameter in mils
 ##############################################################################
 
 # Read an .STL or .PLY mesh, pass to point cloud writer

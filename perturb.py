@@ -56,7 +56,7 @@ def axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M):
     # inv_maxr and inv_lambda are used for speed due to cost of division
     # scale_height is a scaling factor to reduce the double sum
     
-    bounds = [5, 25, 6250, 6750]
+    bounds = [10, 440, 6250, 6750] # the sonic point is at x = 16 mils, 45 degree location is at x = 19 mils, s = rn * 5 is at 440 mils
     max_height    = 1.25 * lambda_k / 2
     trans_point   = 5000
     min_radius    = 650
@@ -64,6 +64,7 @@ def axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M):
     inv_maxx      = 1 / bounds[1]
     inv_lambda_th = 1 / (lambda_k * N)
     inv_lambda_x  = 1 / (lambda_k * M)
+    taper_slope   = (1 - 50/70) / (bounds[3] - bounds[0])
     
     # Perturbation Loop
     # Perturb all sampled points in the radial direction between bounds
@@ -78,28 +79,28 @@ def axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M):
             double_sum[i] = np.sum(A*B) / (2*N+1)
             if (double_sum[i] > max_height):
                 double_sum[i] = max_height
-            r[i] = r[i] + (double_sum[i] + lambda_k/2) * (x[i] - bounds[0]) / (bounds[1] - bounds[0])
+            r[i] = r[i] + (double_sum[i] + lambda_k/2) * ((x[i] - bounds[0]) / (bounds[1] - bounds[0])) * (taper_slope * (x[i] - bounds[0]) + (50/70))
         
         elif bounds[1] < x[i] and x[i] <= trans_point:
             B = np.cos((2 * np.pi * N_mat * th[i] * r[i] * inv_lambda_th) + (2 * np.pi * M_mat * x[i] * inv_lambda_x) + phi)
             double_sum[i] = np.sum(A*B) / (2*N+1)
             if (double_sum[i] > max_height):
                 double_sum[i] = max_height
-            r[i] = r[i] + (double_sum[i] + lambda_k/2)
+            r[i] = r[i] + (double_sum[i] + lambda_k/2) * (taper_slope * (x[i] - bounds[0]) + (50/70))
         
         elif trans_point < x[i] and x[i] <= bounds[2] and r[i] > min_radius:
             B = np.cos((2 * np.pi * N_mat * th[i] * r[i] * inv_lambda_th) + (2 * np.pi * M_mat * x[i] * inv_lambda_x) + phi)
             double_sum[i] = np.sum(A*B) / (2*N+1)
             if (double_sum[i] > max_height):
                 double_sum[i] = max_height
-            r[i] = r[i] + (double_sum[i] + lambda_k/2)
+            r[i] = r[i] + (double_sum[i] + lambda_k/2) * (taper_slope * (x[i] - bounds[0]) + (50/70))
         
         elif bounds[2] < x[i] and x[i] <= bounds[3] and r[i] > min_radius:
             B = np.cos((2 * np.pi * N_mat * th[i] * r[i] * inv_lambda_th) + (2 * np.pi * M_mat * x[i] * inv_lambda_x) + phi)
             double_sum[i] = np.sum(A*B) / (2*N+1)
             if (double_sum[i] > max_height):
                 double_sum[i] = max_height
-            r[i] = r[i] + (double_sum[i] + lambda_k/2) * (bounds[3] - x[i]) / (bounds[3] - bounds[2])
+            r[i] = r[i] + (double_sum[i] + lambda_k/2) * ((bounds[3] - x[i]) / (bounds[3] - bounds[2])) * (taper_slope * (x[i] - bounds[0]) + (50/70))
     
     # Convert coordinates back to cartesian
     x[:] = x[:]                 / 1000 

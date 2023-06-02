@@ -29,25 +29,25 @@ start_time = time.time()
 
 input_path  = os.getcwd()+"/"
 output_path = os.getcwd()+"/"
-mesh_file   = "Common Poly Medium Tip.STL"
-perturbed_mesh_file = "Perturbed Mesh.STL"
+mesh_file   = "OgiveForebody_OI.STL"
+perturbed_mesh_file = "OgiveForebody_OI_Perturbed.STL"
 
 ##############################################################################
 # Alter these fourier series function parameters
 # The length of the sharp tip is 7.5", the base circumference is 6.855", roughly 7" inch average
 # 3.5 / 0.035 = 100, 3.5 / 0.050 = 70, and 3.5 / 0.070 = 50
-N=50              # Upper limit of summation
-M=50              # Upper limit of summation
-lambda_k=70       # The desired roughness wavelength (trough to trough) diameter in mils
+N=4              # Upper limit of summation
+M=4              # Upper limit of summation
+lambda_k=250     # The desired roughness wavelength (trough to trough) diameter in mils
 ##############################################################################
 
 # Read an .STL or .PLY mesh, pass to point cloud writer
-mesh = mesh_reader(input_path, mesh_file)
+# mesh = mesh_reader(input_path, mesh_file)
 
 #  Poisson disk sampling to create point cloud
-sample_points = 10000000
+# sample_points = 10000000
 
-pcd = point_cloud_writer(mesh, sample_points)
+# pcd = point_cloud_writer(mesh, sample_points)
 
 # Create amplitude and phase shift matrices
 # to recompile perturb, enter: f2py -m perturb -c perturb.f90
@@ -60,27 +60,27 @@ line_plot(phi, A, N, M, lambda_k)
 contour_plot(phi, A, N, M, lambda_k)
 
 # Plot the A matrix
-bar_graph(A, N, M, lambda_k)
+# bar_graph(A, N, M, lambda_k)
 
 # Perturb point cloud with axisymmetric fourier series
-pts = np.asarray(pcd.points)
-pts_perturbed = axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M)
+# pts = np.asarray(pcd.points)
+# pts_perturbed = axi_fourier_series(pts, phi, A, lambda_k, sample_points, N, M)
 
 # Shallow copy pcd to pcd_perturbed to create new object without affecting pts,
 # then clear elements
-pcd_perturbed = copy.copy(pcd)
-pcd_perturbed.points.clear()
+# pcd_perturbed = copy.copy(pcd)
+# pcd_perturbed.points.clear()
 
 # Replace with new perturbed elements
-pcd_perturbed.points.extend(pts_perturbed)
+# pcd_perturbed.points.extend(pts_perturbed)
 
 # Write a new point cloud
-o3d.io.write_point_cloud("point_cloud_perturbed.xyz", pcd_perturbed)
+# o3d.io.write_point_cloud("point_cloud_perturbed.xyz", pcd_perturbed)
 
 # Export fourier parameters to excel file
-exporter(A, phi, lambda_k, N, M, output_path)
+# exporter(A, phi, lambda_k, N, M, output_path)
 
 # Export the perturbed coordinates
-np.savetxt("coords.csv", pts_perturbed, delimiter=",")
+# np.savetxt("coords.csv", pts_perturbed, delimiter=",")
 
 print("Calculations completed in %.2f seconds" % (time.time() - start_time))

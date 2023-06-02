@@ -1,0 +1,42 @@
+clear; clc; 
+
+xlsxfile = '/Volumes/GoogleDrive/My Drive/Python/fourier_roughness/fourier_parameters.xlsx';
+
+A = readmatrix(xlsxfile,'Sheet','Amplitude');
+phi = readmatrix(xlsxfile,'Sheet','Phase Shift');
+N = readmatrix(xlsxfile,'Sheet','N');
+M = readmatrix(xlsxfile,'Sheet','M');
+lambda_k = readmatrix(xlsxfile,'Sheet','Wavelength');
+
+fig = figure();
+fig.Units = 'normalized';
+fig.Position = [0, 0, 0.5, 0.95];
+
+
+h = bar3(A,0.7);
+view(45, 55)
+colormap('jet')
+for i = 1:length(h)
+     zdata = get(h(i),'Zdata');
+     set(h(i),'Cdata',zdata)
+end
+
+% xticks(linspace(1,2*N+1,9));
+% yticks(linspace(1,2*M+1,9));
+zticks(linspace(0,lambda_k/2,lambda_k/50+1));
+xticklabels(string(round(linspace(-N,N,9))));
+yticklabels(string(round(linspace(-M,M,9))));
+
+ax = gca;
+ax.FontSize = 32;
+ax.FontName = 'Times';
+ax.x
+% set_ticks(ticks = z_ticks, labels = z_ticks, fontname='Times New Roman', fontsize=20)
+% ax.set_xlabel('N', fontname='Times New Roman', fontsize=20, labelpad = 20)
+% ax.set_ylabel('M', fontname='Times New Roman', fontsize=20, labelpad = 20)
+% ax.set_zlabel('\n\nAmplitude \nCoefficients, mils', fontname='Times New Roman', fontsize=20)
+% ax.view_init(55, -44)
+% ax.dist = 12
+% 
+% % get current figure
+% fig.set_size_inches(8, 6)

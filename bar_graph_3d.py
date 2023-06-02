@@ -36,30 +36,30 @@ def bar_graph(A, N, M, lambda_k):
     zpos = np.zeros(lx*ly)
     
     # Control the thickness/spacing of bars and tick marks
-    scale_factor = 0.5
+    scale_factor = 0.4
     dx           = scale_factor * np.ones_like(zpos)
     dy           = dx.copy()
     dz           = A.flatten()
     
-    fracs           = dz.astype(np.float)/dz.max()
-    norm            = colors.Normalize(fracs.min(), fracs.max())
-    color_values    = cm.jet(norm(fracs.tolist()))
+    fracs        = dz.astype(np.float)/dz.max()
+    norm         = colors.Normalize(fracs.min(), fracs.max())
+    color_values = cm.jet(norm(fracs.tolist()))
 
-    ax.bar3d(xpos,ypos,zpos, dx, dy, dz, color=color_values)
+    ax.bar3d(xpos,ypos,zpos, dx, dy, dz, color=color_values, alpha=1)
     
-    x_ticks = np.linspace(1,2*N+1,np.int(N/2 + 1))
-    y_ticks = np.linspace(1,2*M+1,np.int(M/2 + 1))
-    z_ticks = np.linspace(0,np.int(lambda_k),np.int(lambda_k/50)+1).astype(np.int)
-    x_tick_labels = np.round(np.linspace(-N,N,np.int(N/2 + 1))).astype(np.int)
-    y_tick_labels = np.round(np.linspace(-M,M,np.int(N/2 + 1))).astype(np.int)
+    x_ticks = np.linspace(1,2*N+1,np.int(9))
+    y_ticks = np.linspace(1,2*M+1,np.int(9))
+    z_ticks = np.linspace(0,np.int(lambda_k/2),np.int(lambda_k/50)+1).astype(np.int)
+    x_tick_labels = np.round(np.linspace(-N,N,np.int(9))).astype(np.int)
+    y_tick_labels = np.round(np.linspace(-M,M,np.int(9))).astype(np.int)
     
-    ax.w_xaxis.set_ticks(ticks = x_ticks, labels=x_tick_labels)
-    ax.w_yaxis.set_ticks(ticks = y_ticks, labels=y_tick_labels)
-    ax.set_zticks(z_ticks)
-    ax.set_xlabel('N')
-    ax.set_ylabel('M')
-    ax.set_zlabel('Amplitude Coefficient (mils)')
-    ax.view_init(45, -45)
+    ax.w_xaxis.set_ticks(ticks = x_ticks, labels = x_tick_labels, fontname='Times New Roman', fontsize=20)
+    ax.w_yaxis.set_ticks(ticks = y_ticks, labels = y_tick_labels, fontname='Times New Roman', fontsize=20)
+    ax.w_zaxis.set_ticks(ticks = z_ticks, labels = z_ticks, fontname='Times New Roman', fontsize=20)
+    ax.set_xlabel('N', fontname='Times New Roman', fontsize=20, labelpad = 20)
+    ax.set_ylabel('M', fontname='Times New Roman', fontsize=20, labelpad = 20)
+    ax.set_zlabel('\n\nAmplitude \nCoefficients, mils', fontname='Times New Roman', fontsize=20)
+    ax.view_init(55, -44)
     ax.dist = 12
     
     # get current figure

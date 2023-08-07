@@ -40,20 +40,20 @@ def line_plot(phi, A, N, M, lambda_k):
     fig,ax=plt.subplots(1,1)
     plt.plot(x,y,color='red')
     plt.grid(visible=True, which='Major', axis='both', linewidth=0.5)
-    ax.set_xticks(               np.linspace(-N*lambda_k     , N*lambda_k     , 5),              fontname='Times New Roman', fontsize=16)
-    ax.set_yticks(               np.linspace(  -lambda_k     ,   lambda_k     , 5),              fontname='Times New Roman', fontsize=16)
-    ax.set_xticklabels(np.around(np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5), decimals=3), fontname='Times New Roman', fontsize=16) 
-    ax.set_yticklabels(np.around(np.linspace(  -lambda_k/1000,   lambda_k/1000, 5), decimals=3), fontname='Times New Roman', fontsize=16)
-    ax.set_xlabel('x (in)'                                                                     , fontname='Times New Roman', fontsize=18)
-    ax.set_ylabel('Roughness height (in)'                                                      , fontname='Times New Roman', fontsize=18)
-    ax.set_title(title                                                                         , fontname='Times New Roman', fontsize=20, fontweight='bold')
+    ax.set_xticks(     np.linspace(-N*lambda_k     , N*lambda_k     , 5))
+    ax.set_xticklabels(np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5), fontname='Times New Roman', fontsize=24) 
+    ax.set_yticks(     np.linspace(  -lambda_k     , lambda_k       , 5))
+    ax.set_yticklabels(np.linspace(  -lambda_k     , lambda_k       , 5), fontname='Times New Roman', fontsize=24)
+    ax.set_xlabel('x, inches'                                           , fontname='Times New Roman', fontsize=28)
+    ax.set_ylabel('Roughness height, mils'                              , fontname='Times New Roman', fontsize=28)
+    # ax.set_title(title                                                                         , fontname='Times New Roman', fontsize=20, fontweight='bold')
     
     # get current figure
     figure = plt.gcf()
     figure.set_size_inches(8, 6)
     
     # when saving, specify the DPI
-    figure.savefig(title + '.png', dpi = 200)
+    figure.savefig(title + '.png', bbox_inches="tight", dpi = 200)
 
 
 
@@ -82,18 +82,18 @@ def contour_plot(phi, A, N, M, lambda_k):
     zpos = np.reshape(z, (samples, samples))
     
     fig,ax=plt.subplots(1,1)
-    cp =  ax.contourf(xpos, ypos, zpos, cmap=plt.cm.jet, levels=np.linspace(-lambda_k/2/1000-0.02, lambda_k/2/1000+0.02, 500))
+    cp =  ax.contourf(xpos, ypos, zpos, cmap=plt.cm.jet, levels=np.linspace(-lambda_k/2/1000-0.01, lambda_k/2/1000+0.01, 500))
     cb = fig.colorbar(cp)
-    cb.set_ticks(                np.linspace(  -lambda_k/2/1000,   lambda_k/2/1000, 3),              fontname='Times New Roman', fontsize=16)
-    cb.set_ticklabels( np.around(np.linspace(  -lambda_k/2/1000,   lambda_k/2/1000, 3), decimals=3), fontname='Times New Roman', fontsize=16, fontweight='bold')
-    ax.set_xticks(               np.linspace(-N*lambda_k  /1000, N*lambda_k  /1000, 5)             , fontname='Times New Roman', fontsize=20)
-    ax.set_yticks(               np.linspace(-M*lambda_k  /1000, M*lambda_k  /1000, 5)             , fontname='Times New Roman', fontsize=16)
-    ax.set_xticklabels(np.around(np.linspace(-N*lambda_k  /1000, N*lambda_k  /1000, 5), decimals=1), fontname='Times New Roman', fontsize=16)
-    ax.set_yticklabels(np.around(np.linspace(-M*lambda_k  /1000, M*lambda_k  /1000, 5), decimals=1), fontname='Times New Roman', fontsize=16)
-    cb.set_label('Roughness height (in)'                                                           , fontname='Times New Roman', fontsize=18)
-    ax.set_xlabel('x (in)'                                                                         , fontname='Times New Roman', fontsize=18)
-    ax.set_ylabel('y (in)'                                                                         , fontname='Times New Roman', fontsize=18)
-    ax.set_title(title                                                                             , fontname='Times New Roman', fontsize=20, fontweight='bold')
+    cb.set_ticks(      np.linspace(  -lambda_k/2/1000, lambda_k/2/1000, 3))
+    cb.set_ticklabels( np.linspace(  -lambda_k/2     , lambda_k/2     , 3), fontname='Times New Roman', fontsize=24)
+    ax.set_xticks(     np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5))
+    ax.set_xticklabels(np.linspace(-N*lambda_k/1000, N*lambda_k/1000, 5), fontname='Times New Roman', fontsize=24)
+    ax.set_yticks(     np.linspace(-M*lambda_k/1000, M*lambda_k/1000, 5))
+    ax.set_yticklabels(np.linspace(-M*lambda_k/1000, M*lambda_k/1000, 5), fontname='Times New Roman', fontsize=24)
+    cb.set_label('Roughness height, mils'                                         , fontname='Times New Roman', fontsize=28)
+    ax.set_xlabel('x, inches'                                                     , fontname='Times New Roman', fontsize=28)
+    ax.set_ylabel('y, inches'                                                     , fontname='Times New Roman', fontsize=28)
+    # ax.set_title(title                                                                             , fontname='Times New Roman', fontsize=20, fontweight='bold')
     plt.gca().set_aspect('equal')
     
     # get current figure
@@ -101,4 +101,4 @@ def contour_plot(phi, A, N, M, lambda_k):
     figure.set_size_inches(8, 6)
     
     # when saving, specify the DPI
-    figure.savefig(title + '.png', dpi = 200)
+    figure.savefig(title + '.png', bbox_inches="tight", dpi = 200)

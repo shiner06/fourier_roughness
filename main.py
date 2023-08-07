@@ -16,9 +16,8 @@ Created on Tue Dec  8 15:21:43 2020
 from perturb import wave_prep, axi_fourier_series
 from initialize import mesh_reader, point_cloud_writer
 from excel_writer import exporter
-from bar_graph_3d import bar_graph
+# from bar_graph_3d import bar_graph
 from example_plots import line_plot, contour_plot
-# from meshing import poisson_mesh
 import open3d as o3d
 import os
 import time
@@ -29,16 +28,17 @@ start_time = time.time()
 
 input_path  = os.getcwd()+"/"
 output_path = os.getcwd()+"/"
-mesh_file   = "Common Poly Medium Tip.STL"
-perturbed_mesh_file = "Perturbed Mesh.STL"
+mesh_file   = "OgiveForebody_OI.STL"
 
 ##############################################################################
 # Alter these fourier series function parameters
 # The length of the sharp tip is 7.5", the base circumference is 6.855", roughly 7" inch average
 # 3.5 / 0.035 = 100, 3.5 / 0.050 = 70, and 3.5 / 0.070 = 50
+# Oscars ogive is 10" long, roughly 6.28" base circumference
+# 5 / 0.100 = 50, 3 / 0.100 = 30
 N=50              # Upper limit of summation
 M=50              # Upper limit of summation
-lambda_k=70       # The desired roughness wavelength (trough to trough) diameter in mils
+lambda_k=100      # The desired roughness wavelength (trough to trough) diameter in mils
 ##############################################################################
 
 # Read an .STL or .PLY mesh, pass to point cloud writer
@@ -60,7 +60,7 @@ line_plot(phi, A, N, M, lambda_k)
 contour_plot(phi, A, N, M, lambda_k)
 
 # Plot the A matrix
-bar_graph(A, N, M, lambda_k)
+# bar_graph(A, N, M, lambda_k)
 
 # Perturb point cloud with axisymmetric fourier series
 pts = np.asarray(pcd.points)
